@@ -1,0 +1,13 @@
+package murasAI_LMS;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class MurasAiApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
