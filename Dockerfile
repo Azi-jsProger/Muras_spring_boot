@@ -1,21 +1,25 @@
-# Используем OpenJDK 17
-FROM openjdk:17-jdk-slim
+# Используем официально поддерживаемый образ OpenJDK 17 на базе Debian slim
+FROM eclipse-temurin:17-jdk-focal
 
-# Рабочая директория
+# Устанавливаем Maven
+RUN apt-get update && apt-get install -y maven git && rm -rf /var/lib/apt/lists/*
+
+# Создаём рабочую директорию
 WORKDIR /app
 
-# Копируем pom.xml и скачиваем зависимости (кэшируем для ускорения)
+# Копируем pom.xml и скачиваем зависимости (кэшируем для ускорения сборки)
 COPY pom.xml .
-RUN apt-get update && apt-get install -y maven && mvn dependency:go-offline
+RUN mvn dependency:go-offline -B
 
 # Копируем весь проект
 COPY src ./src
 
-# Собираем jar
-RUN mvn clean package -DskipTests
+# Собираем jar без тестов
+RUN mvn clean package -DskipTests -B
 
-# Указываем команду запуска
-CMD ["java", "-jar", "target/murasAI-0.0.1-SNAPSHOT.jar"]
+# Экспонируем порт, Render передаст свой через переменную PORT
+ENV PORT=8080
+EXPOSE $PORT
 
-# Экспонируем порт (Render передаст через PORT)
-EXPOSE 8080
+# Команда запуска Spring Boot приложения
+CMD ["sh", "-c", "java -jar target/murasAI-0.0.1-SNAPSHOT.jar --server.port=$PORT"]
